@@ -1,0 +1,46 @@
+.navbar {
+    display: flex;
+    flex-direction: column; /* عمودي = مناسب للهاتف */
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.navbar a {
+    background: #007BFF;
+    padding: 12px;
+    color: white;
+    text-decoration: none;
+    text-align: center;
+    border-radius: 8px;
+    font-size: 16px;
+}
+.att-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.att-table th, .att-table td {
+    border: 1px solid #aaa;
+    padding: 8px;
+    text-align: center;
+}
+
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.form input, .form button {
+    padding: 12px;
+    font-size: 16px;
+    border: 1px solid #999;
+    border-radius: 8px;
+}
+
+.form button {
+    background: #28a745;
+    color: white;
+    font-weight: bold;
+}
