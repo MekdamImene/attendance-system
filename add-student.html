@@ -7,30 +7,41 @@
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
- <nav class="navbar">
+   <nav class="navbar" novalidate>
     <a href="index.html">Home</a>
     <a href="attendance.html">Attendance</a>
     <a href="add-student.html">Add Student</a>
     <a href="reports.html">Reports</a>
     <a href="#">Logout</a>
-</nav> 
+   </nav> 
 
-<h2>Add Student</h2>
+  <h2>Add Student</h2>
 
-<form class="form">
-    <label>Student ID</label>
-    <input type="text">
+     <div class="form-container">
+    
+    <form id="studentForm">
+       <label for="firstName">First Name</label>
+       <input id="firstName" type="text">
+       <p class="error" id="firstNameError"></p>
 
-    <label>Last Name</label>
-    <input type="text">
+       <label for="lastName">Last Name</label>
+       <input id="lastName" type="text">
+       <p class="error" id="lastNameError"></p>
 
-    <label>First Name</label>
-    <input type="text">
+       <label for="studentId">Student ID</label>
+       <input id="studentId" type="text">
+       <p class="error" id="studentIdError"></p>
 
-    <label>Email</label>
-    <input type="email">
+       <label for="email">Email</label>
+       <input id="email" type="text">
+       <p class="error" id="emailError"></p>
 
-    <button type="submit">Submit</button>
-</form>  
+
+      <button class="btn" type="submit">Add Student</button>
+       <p id="formMessage"></p>
+
+    </form>
+   </div> 
+  <script src="js/add-student.js"></script>
 </body>
 </html>

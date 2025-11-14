@@ -1,46 +1,207 @@
+body {
+    max-width: 430px;         /* عرض يشبه شاشة هاتف */
+    margin: auto;
+    padding: 12px;
+    font-family: Arial, sans-serif;
+    background: #f7f9fb;
+}
+
+h2 {
+    margin: 8px 0;
+    text-align: left;
+}
 .navbar {
     display: flex;
-    flex-direction: column; /* عمودي = مناسب للهاتف */
-    gap: 10px;
-    margin-bottom: 20px;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    background: #68ffff;
+    padding: 16px 8px;
+    border-radius: 8px;
 }
 
 .navbar a {
-    background: #007BFF;
-    padding: 12px;
-    color: white;
-    text-decoration: none;
+
     text-align: center;
-    border-radius: 8px;
-    font-size: 16px;
+    text-decoration: none;
+    font-weight: bold;
+    color: #222524;
+    font-size: 16px;                /* حجم مناسب لخمسة عناصر */
+    padding: 6px 0;
 }
+
+/* تأثير بسيط عند المرور */
+.navbar a:hover {
+    background: #d0d6dd;
+    border-radius: 6px;
+}
+
+
+/* ====== تنسيق الجدول ====== */
+
+.table-container {
+    overflow-x: auto;
+    width: 100%;
+}
+
 .att-table {
     width: 100%;
     border-collapse: collapse;
     font-size: 14px;
+    margin-top: 12px;
+    background: white;
+    table-layout: auto;       /* توزيع متساوٍ للأعمدة */
 }
 
-.att-table th, .att-table td {
-    border: 1px solid #aaa;
-    padding: 8px;
+.att-table th,
+.att-table td {
+    border: 1px solid #444;
+    padding: 6px;
     text-align: center;
+     vertical-align: middle;
+    white-space: nowrap;     /* يمنع تكسير الكلمات */
+
 }
 
-.form {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
+/* ====== رؤوس الجدول ====== */
 
-.form input, .form button {
-    padding: 12px;
-    font-size: 16px;
-    border: 1px solid #999;
-    border-radius: 8px;
-}
-
-.form button {
-    background: #28a745;
-    color: white;
+.att-table th {
+    background: #e5e7eb;
     font-weight: bold;
+    padding: 8px;
+}
+
+.att-table tr:nth-child(1) th,
+.att-table tr:nth-child(2) th {
+    background: #dfe3e6;
+}
+
+/* ====== لتنسيق خانات Last/First Name ====== */
+.att-table td:nth-child(1),
+.att-table td:nth-child(2) {
+    white-space: nowrap;
+    font-weight: bold;
+}
+
+/* ====== تأثير لطيف على الصفوف ====== */
+
+.att-table tr {
+    transition: background 0.25s ease;
+}
+
+/* ====== الـ Checkboxes داخل الجدول ====== */
+
+.att-table input[type="checkbox"] {
+    transform: scale(1.3); /* تكبير الـ checkbox مناسب للموبايل */
+    cursor: pointer;
+}
+
+/* ====== أعمدة Abs و Par ====== */
+
+.att-table .abs,
+.att-table .par {
+    font-weight: bold;
+    color: #222;
+    white-space: nowrap;
+}
+
+/* ====== تحسين المظهر في الموبايل ====== */
+
+.att-table td {
+    font-size: 13px;
+    padding: 6px;
+}
+
+/* ==== Form css ===== */
+
+.form-container {
+    background: white;
+    padding: 15px;
+    border-radius: 10px;
+}
+
+.form-container label {
+    font-weight: bold;
+    display: block;
+    margin-top: 10px;
+}
+
+.form-container input {
+    width: 100%;
+    padding: 8px;
+    margin-top: 4px;
+    border-radius: 6px;
+    border: 1px solid #aaa;
+}
+
+.btn {
+    margin-top: 15px;
+    width: 100%;
+    padding: 10px;
+    background: #4f6df5;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.error {
+    color: red;
+    font-size: 14px;
+    margin: 4px 0;
+    min-height: 16px;
+}
+
+input.invalid {
+    border: 2px solid red;
+    background-color: #ffe5e5;
+}
+
+#formMessage {
+    margin-top: 10px;
+    font-weight: bold;
+    text-align: center;
+    min-height: 20px;
+}
+ 
+/* Report Section on Attendance Page */
+#reportContainer {
+    display: none;
+    margin-top: 15px;
+    background: #ffffff;
+    padding: 14px;
+    border-radius: 10px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    max-width: 380px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#reportContainer h3 {
+    margin-bottom: 10px;
+    font-size: 20px;
+}
+
+.report-item {
+    margin: 6px 0;
+    font-size: 16px;
+}
+
+#attendanceChart {
+    max-height: 180px !important;
+    height: 180px !important;
+    width: 100% !important;
+}
+
+/* Button styling (optional, same as other buttons) */
+#showReportBtn {
+    display: block;
+    margin: 10px auto;
+    padding: 10px 16px;
+    background: #0d6efd;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
 }
