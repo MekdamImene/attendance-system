@@ -1,45 +1,39 @@
 document.addEventListener("DOMContentLoaded", () => {
 
-    /* ===========================================================
-        0) FUNCTIONS FIRST
+    /* ============================================================
+        0) FUNCTIONS
     ============================================================ */
 
-    // Create the 12 checkboxes (S1..S6)
-    function generateSessionCells() {
+    function generateSessionCells(studentIndex) {
         let cells = "";
-        for (let i = 1; i <= 6; i++) {
+        for (let s = 0; s < 6; s++) {
             cells += `
-                <td><input type="checkbox" class="present"></td>
-                <td><input type="checkbox" class="participate"></td>
+                <td><input type="checkbox" class="present" data-st="${studentIndex}" data-ses="${s}"></td>
+                <td><input type="checkbox" class="participate" data-st="${studentIndex}" data-ses="${s}"></td>
             `;
         }
         return cells;
     }
 
-    // Add a new student row to the table
-    function addStudentToAttendanceTable(student) {
+    function addStudentRow(student, index) {
         const tbody = document.getElementById("attendanceBody");
-
         const tr = document.createElement("tr");
 
         tr.innerHTML = `
-            <td>${student.last}</td>
-            <td>${student.first}</td>
-            ${generateSessionCells()}
+            <td>${student.last_name}</td>
+            <td>${student.first_name}</td>
+
+            ${generateSessionCells(index)}
+
             <td class="abs"></td>
             <td class="par"></td>
             <td class="msg"></td>
         `;
 
         tbody.appendChild(tr);
-
-        // Update row after building it
-        updateRow(tr);
     }
 
-    // Recalculate row (existing function)
     function updateRow(row) {
-
         const presentBoxes = row.querySelectorAll(".present");
         const participateBoxes = row.querySelectorAll(".participate");
 
@@ -54,24 +48,18 @@ document.addEventListener("DOMContentLoaded", () => {
             if (box.checked) participation++;
         });
 
-        row.querySelector(".abs").textContent = absences + " Abs";
-        row.querySelector(".par").textContent = participation + " Par";
+        row.querySelector(".abs").textContent = absences;
+        row.querySelector(".par").textContent = participation;
 
         let message = "";
-
         if (absences > 4) {
             message = "Excluded – too many absences – You need to participate more";
-        }
-        else if (absences >= 3) {
+        } else if (absences >= 3) {
             message = "Warning – attendance low – You need to participate more";
-        }
-        else {
-            if (participation >= 4)
-                message = "Good attendance – Excellent participation";
-            else if (participation >= 2)
-                message = "Good attendance – Good participation";
-            else
-                message = "Good attendance – You need to participate more";
+        } else {
+            if (participation >= 4) message = "Good attendance – Excellent participation";
+            else if (participation >= 2) message = "Good attendance – Good participation";
+            else message = "Good attendance – You need to participate more";
         }
 
         row.querySelector(".msg").textContent = message;
@@ -81,196 +69,156 @@ document.addEventListener("DOMContentLoaded", () => {
         else row.style.background = "#ffc2c2";
     }
 
-
-
-    /* ===========================================================
-        1) LOAD STUDENTS & ADD THEM TO TABLE
+    /* ============================================================
+        1) GLOBAL VARIABLE TO SAVE ORIGINAL ORDER
     ============================================================ */
+    window.originalOrder = [];
 
-let students = JSON.parse(localStorage.getItem("students")) || [];
-
-// Always render all students from storage (no special-case)
-students.forEach(student => addStudentToAttendanceTable(student));
-
-// Remove old flag (not needed anymore)
-localStorage.removeItem("newStudentAdded");
-
-
-
-
-    /* ===========================================================
-        2) LINK CHECKBOXES AFTER ROWS EXIST
+    /* ============================================================
+        2) FETCH STUDENTS FROM DATABASE
     ============================================================ */
+    fetch("php/list_students.php")
+        .then(res => res.json())
+        .then(data => {
+            if (data.status !== "success") {
+                alert("Failed to load students.");
+                return;
+            }
 
-    let checkboxes = document.querySelectorAll("input[type=checkbox]");
+            const students = data.data;
+            const tbody = document.getElementById("attendanceBody");
+            tbody.innerHTML = "";
 
-    checkboxes.forEach((ch, index) => {
-        const uniqueID = "checkbox_" + index;
-        ch.dataset.id = uniqueID;
+            students.forEach((student, index) => {
+                addStudentRow(student, index);
+            });
 
-        const savedState = localStorage.getItem(uniqueID);
-        if (savedState === "true") ch.checked = true;
-        if (savedState === "false") ch.checked = false;
+            linkCheckboxes();
+            recalcAllRows();
+
+            // SAVE ORIGINAL ORDER AFTER TABLE IS READY
+            window.originalOrder = $("#attendanceBody").children().get();
+        });
+
+    /* ============================================================
+        3) LINK CHECKBOXES TO LOCALSTORAGE
+    ============================================================ */
+    function linkCheckboxes() {
+        const checkboxes = document.querySelectorAll("#attendanceBody input[type=checkbox]");
+
+        checkboxes.forEach((ch, index) => {
+            const uniqueID = "checkbox_" + index;
+            ch.dataset.id = uniqueID;
+
+            const saved = localStorage.getItem(uniqueID);
+            if (saved === "true") ch.checked = true;
+            if (saved === "false") ch.checked = false;
+
+            ch.addEventListener("change", () => {
+                localStorage.setItem(uniqueID, ch.checked);
+                updateRow(ch.closest("tr"));
+            });
+        });
+    }
+
+    /* ============================================================
+        4) RECALCULATE ALL ROWS
+    ============================================================ */
+    function recalcAllRows() {
+        const rows = document.querySelectorAll("#attendanceBody tr");
+        rows.forEach(row => updateRow(row));
+    }
+
+}); // END DOMContentLoaded
+
+
+
+/* ============================================================
+   5) jQUERY FEATURES 
+============================================================ */
+$(document).ready(function () {
+
+    const $tbody = $("#attendanceBody");
+
+    // Hover effect
+    $tbody.on("mouseenter", "tr", function () { $(this).addClass("tr-hover"); });
+    $tbody.on("mouseleave", "tr", function () { $(this).removeClass("tr-hover"); });
+
+    // Click row alert
+    $tbody.on("click", "tr", function (event) {
+        if ($(event.target).is("input[type=checkbox]")) return;
+        const last = $(this).find("td").eq(0).text().trim();
+        const first = $(this).find("td").eq(1).text().trim();
+        alert("Student: " + first + " " + last);
     });
 
-
-
-    /* ===========================================================
-        3) RECALCULATE AFTER LOADING CHECKBOXES
-    ============================================================ */
-
-    const rows = document.querySelectorAll("#attendanceBody tr");
-    rows.forEach(row => updateRow(row));
-
-
-
-    /* ===========================================================
-        4) SAVE NEW CHECKS AND UPDATE ROW
-    ============================================================ */
-
-    checkboxes.forEach(ch => {
-        ch.addEventListener("change", () => {
-
-            const id = ch.dataset.id;
-            localStorage.setItem(id, ch.checked);
-
-            const row = ch.closest("tr");
-            updateRow(row);
+    // Highlight excellent
+    $("#highlightExcellentBtn").on("click", function () {
+        $("#attendanceBody tr").removeClass("excellent-anim");
+        $("#attendanceBody tr").each(function () {
+            const abs = parseInt($(this).find(".abs").text()) || 0;
+            if (abs < 3) $(this).addClass("excellent-anim");
         });
     });
 
-});
-
-// ---------- jQuery UI for row hover / click (requires jQuery loaded) ----------
-$(document).ready(function() {
-
-  const $tbody = $("#attendanceBody");
-
-  // ---------------- HOVER ----------------
-  $tbody.on("mouseenter", "tr", function() {
-    $(this).addClass("tr-hover");
-  });
-
-  $tbody.on("mouseleave", "tr", function() {
-    $(this).removeClass("tr-hover");
-  });
-
-  // ---------------- CLICK ROW ----------------
-  $tbody.on("click", "tr", function(event) {
-
-    // Prevent message when clicking a checkbox
-    if ($(event.target).is("input[type=checkbox]")) return;
-
-    const last = $(this).find("td").eq(0).text().trim();
-    const first = $(this).find("td").eq(1).text().trim();
-    const fullName = first + " " + last;
-
-    let absences = 0;
-    $(this).find(".present").each(function() {
-      if (!this.checked) absences++;
+    $("#resetColorsBtn").on("click", function () {
+        $("#attendanceBody tr").removeClass("excellent-anim");
     });
 
-    alert("Student: " + fullName + "\nAbsences: " + absences);
-  });
+    // Search
+    $("#searchInput").on("keyup", function () {
+        const value = $(this).val().toLowerCase();
+        $("#attendanceBody tr").filter(function () {
+            const last = $(this).find("td").eq(0).text().toLowerCase();
+            const first = $(this).find("td").eq(1).text().toLowerCase();
+            $(this).toggle(last.includes(value) || first.includes(value));
+        });
+    });
 
-  // ---------------- Highlight Excellent Students ----------------
-  $("#highlightExcellentBtn").on("click", function () {
+    // Sort absences
+    $("#sortAbsBtn").on("click", function () {
+        const rows = $("#attendanceBody tr").get();
+        rows.sort((a, b) => (parseInt($(a).find(".abs").text()) || 0) - (parseInt($(b).find(".abs").text()) || 0));
+        $("#attendanceBody").empty().append(rows);
+        $("#sortMessage").text("Sorted by absences (ASC)");
+    });
 
-      $("#attendanceBody tr").removeClass("excellent-anim");
+    // Sort participation
+    $("#sortParBtn").on("click", function () {
+        const rows = $("#attendanceBody tr").get();
+        rows.sort((a, b) => (parseInt($(b).find(".par").text()) || 0) - (parseInt($(a).find(".par").text()) || 0));
+        $("#attendanceBody").empty().append(rows);
+        $("#sortMessage").text("Sorted by participation (DESC)");
+    });
 
-      $("#attendanceBody tr").each(function () {
+    // Reset sorting
+    $("#resetSortBtn").on("click", function () {
+        $("#attendanceBody").empty().append(window.originalOrder);
+        $("#sortMessage").text("Sorting reset — original order restored.");
+    });
 
-          const $row = $(this);
-          const absText = $row.find(".abs").text().trim();
-          const absMatch = absText.match(/(\d+)/);
-          const abs = absMatch ? parseInt(absMatch[1]) : 0;
-
-          if (abs < 3) {
-              $row.addClass("excellent-anim");
-          }
-      });
-  });
-
-  // ---------------- Reset Colors ----------------
-  $("#resetColorsBtn").on("click", function () {
-      $("#attendanceBody tr").removeClass("excellent-anim");
-  });
-   
-    // ---- 1. SEARCH BY NAME ----
-  $("#searchInput").on("keyup", function () {
-      const value = $(this).val().toLowerCase();
-
-      $("#attendanceBody tr").filter(function () {
-          const last = $(this).find("td").eq(0).text().toLowerCase();
-          const first = $(this).find("td").eq(1).text().toLowerCase();
-
-          $(this).toggle(last.includes(value) || first.includes(value));
-      });
-  });
-
-  // ---- 2. SORT BY ABSENCES (ASC) ----
-  $("#sortAbsBtn").on("click", function () {
-
-      const rows = $("#attendanceBody tr").get();
-
-      rows.sort(function (a, b) {
-          const absA = parseInt($(a).find(".abs").text()) || 0;
-          const absB = parseInt($(b).find(".abs").text()) || 0;
-          return absA - absB;
-      });
-
-      $("#attendanceBody").empty().append(rows);
-
-      $("#sortMessage").text("Currently sorted by absences (ascending)");
-  });
-
-  // ---- 3. SORT BY PARTICIPATION (DESC) ----
-  $("#sortParBtn").on("click", function () {
-
-      const rows = $("#attendanceBody tr").get();
-
-      rows.sort(function (a, b) {
-          const parA = parseInt($(a).find(".par").text()) || 0;
-          const parB = parseInt($(b).find(".par").text()) || 0;
-          return parB - parA;
-      });
-
-      $("#attendanceBody").empty().append(rows);
-
-      $("#sortMessage").text("Currently sorted by participation (descending)");
-  });
-
-         // ===== SAVE ORIGINAL ORDER =====
-      let originalOrder = $("#attendanceBody").children().get();
-
-        // ===== RESET SORTING =====
-          $("#resetSortBtn").on("click", function () {
-       // Restore the saved original rows
-        $("#attendanceBody").empty().append(originalOrder);
-   
-         $("#sortMessage").text("Sorting reset — original order restored.");
 });
 
-}); // END OF READY
 
 
- 
-// ---------------- SHOW REPORT BUTTON ----------------
+
+/* ============================================================
+   5) REPORT BUTTON (unchanged)
+============================================================ */
+
 document.getElementById("showReportBtn").addEventListener("click", () => {
 
     const container = document.getElementById("reportContainer");
     const btn = document.getElementById("showReportBtn");
 
-    // If visible → hide it
     if (container.style.display === "block") {
         container.style.display = "none";
-        btn.textContent = "Show Report";  // ← change text
+        btn.textContent = "Show Report";
         return;
     }
 
-    // Otherwise → show and regenerate report
     container.style.display = "block";
-    btn.textContent = "Hide Report"; // ← change text
+    btn.textContent = "Hide Report";
 
     const rows = document.querySelectorAll("#attendanceBody tr");
 
@@ -279,24 +227,21 @@ document.getElementById("showReportBtn").addEventListener("click", () => {
     let participateCount = 0;
 
     rows.forEach(row => {
-        const presentBoxes = Array.from(row.querySelectorAll(".present"));
-        const participateBoxes = Array.from(row.querySelectorAll(".participate"));
+        const presentBoxes = row.querySelectorAll(".present");
+        const participateBoxes = row.querySelectorAll(".participate");
 
-        if (presentBoxes.some(cb => cb.checked)) presentCount++;
-        if (participateBoxes.some(cb => cb.checked)) participateCount++;
+        if ([...presentBoxes].some(cb => cb.checked)) presentCount++;
+        if ([...participateBoxes].some(cb => cb.checked)) participateCount++;
     });
 
-    // Fill data
     document.getElementById("totalStudents").textContent = total;
     document.getElementById("presentStudents").textContent = presentCount;
     document.getElementById("participatingStudents").textContent = participateCount;
 
-    // Draw chart
     const ctx = document.getElementById("attendanceChart");
 
-    if (window.attendanceChartInstance) {
+    if (window.attendanceChartInstance)
         window.attendanceChartInstance.destroy();
-    }
 
     window.attendanceChartInstance = new Chart(ctx, {
         type: "bar",
@@ -307,14 +252,13 @@ document.getElementById("showReportBtn").addEventListener("click", () => {
                 data: [total, presentCount, participateCount],
                 backgroundColor: ["#3498db", "#2ecc71", "#f1c40f"]
             }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: true
         }
     });
 
 });
+
+
+
 
 
 

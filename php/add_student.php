@@ -1,49 +1,50 @@
 <?php
 require_once __DIR__ . "/db_connect.php";
 
-if ($_SERVER["REQUEST_METHOD"] === "POST") {
+header("Content-Type: application/json");
 
-    // Get values
-    $first = trim($_POST["first_name"] ?? "");
-    $last  = trim($_POST["last_name"] ?? "");
-    $sid   = trim($_POST["matricule"] ?? "");
-    $email = trim($_POST["email"] ?? "");
+if ($_SERVER["REQUEST_METHOD"] !== "POST") {
+    echo json_encode(["status" => "error", "message" => "Invalid request method"]);
+    exit;
+}
 
-    // Validate required fields
-    if ($first === "" || $last === "" || $sid === "" || $email === "") {
-        echo "ERROR: All fields are required.";
-        exit;
-    }
+// Collect fields
+$first = trim($_POST["first_name"] ?? "");
+$last  = trim($_POST["last_name"] ?? "");
+$matricule = trim($_POST["matricule"] ?? "");
+$email = trim($_POST["email"] ?? "");
 
-    // Connect to DB
-    $pdo = db_connect();
-    if (!$pdo) {
-        echo "ERROR: Could not connect to database.";
-        exit;
-    }
+// Validate required fields
+if ($first === "" || $last === "" || $matricule === "" || $email === "") {
+    echo json_encode(["status" => "error", "message" => "All fields are required"]);
+    exit;
+}
 
-    // Prepare INSERT query
-    $sql = "INSERT INTO students (first_name, last_name, matricule, email, created_at)
-            VALUES (:first, :last, :sid, :email, NOW())";
+// Connect to DB
+$pdo = db_connect();
+if (!$pdo) {
+    echo json_encode(["status" => "error", "message" => "Database connection failed"]);
+    exit;
+}
 
-    $stmt = $pdo->prepare($sql);
+// Insert query
+$sql = "INSERT INTO students (first_name, last_name, matricule, email, created_at)
+        VALUES (:first, :last, :matricule, :email, NOW())";
 
-    try {
-        $stmt->execute([
-            ":first" => $first,
-            ":last"  => $last,
-            ":sid"   => $sid,
-            ":email" => $email
-        ]);
+$stmt = $pdo->prepare($sql);
 
-        echo "SUCCESS: Student added.";
+try {
+    $stmt->execute([
+        ":first" => $first,
+        ":last" => $last,
+        ":matricule" => $matricule,
+        ":email" => $email
+    ]);
 
-    } catch (PDOException $e) {
-        echo "DB ERROR: " . $e->getMessage();
-    }
+    echo json_encode(["status" => "success", "message" => "Student added successfully"]);
 
-} else {
-    echo "Invalid request.";
+} catch (PDOException $e) {
+    echo json_encode(["status" => "error", "message" => $e->getMessage()]);
 }
 ?>
 
