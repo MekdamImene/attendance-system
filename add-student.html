@@ -19,21 +19,21 @@
 
      <div class="form-container">
     
-    <form id="studentForm">
+    <form id="studentForm" action="php/add_student.php" method="POST">
        <label for="firstName">First Name</label>
-       <input id="firstName" type="text">
+       <input id="firstName" name="first_name" type="text">
        <p class="error" id="firstNameError"></p>
 
        <label for="lastName">Last Name</label>
-       <input id="lastName" type="text">
+       <input id="lastName"  name="last_name" type="text">
        <p class="error" id="lastNameError"></p>
 
        <label for="studentId">Student ID</label>
-       <input id="studentId" type="text">
+       <input id="studentId" name="matricule" type="text">
        <p class="error" id="studentIdError"></p>
 
        <label for="email">Email</label>
-       <input id="email" type="text">
+       <input id="email" name="email" type="text">
        <p class="error" id="emailError"></p>
 
 

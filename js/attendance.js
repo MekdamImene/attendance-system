@@ -140,6 +140,120 @@ localStorage.removeItem("newStudentAdded");
     });
 
 });
+
+// ---------- jQuery UI for row hover / click (requires jQuery loaded) ----------
+$(document).ready(function() {
+
+  const $tbody = $("#attendanceBody");
+
+  // ---------------- HOVER ----------------
+  $tbody.on("mouseenter", "tr", function() {
+    $(this).addClass("tr-hover");
+  });
+
+  $tbody.on("mouseleave", "tr", function() {
+    $(this).removeClass("tr-hover");
+  });
+
+  // ---------------- CLICK ROW ----------------
+  $tbody.on("click", "tr", function(event) {
+
+    // Prevent message when clicking a checkbox
+    if ($(event.target).is("input[type=checkbox]")) return;
+
+    const last = $(this).find("td").eq(0).text().trim();
+    const first = $(this).find("td").eq(1).text().trim();
+    const fullName = first + " " + last;
+
+    let absences = 0;
+    $(this).find(".present").each(function() {
+      if (!this.checked) absences++;
+    });
+
+    alert("Student: " + fullName + "\nAbsences: " + absences);
+  });
+
+  // ---------------- Highlight Excellent Students ----------------
+  $("#highlightExcellentBtn").on("click", function () {
+
+      $("#attendanceBody tr").removeClass("excellent-anim");
+
+      $("#attendanceBody tr").each(function () {
+
+          const $row = $(this);
+          const absText = $row.find(".abs").text().trim();
+          const absMatch = absText.match(/(\d+)/);
+          const abs = absMatch ? parseInt(absMatch[1]) : 0;
+
+          if (abs < 3) {
+              $row.addClass("excellent-anim");
+          }
+      });
+  });
+
+  // ---------------- Reset Colors ----------------
+  $("#resetColorsBtn").on("click", function () {
+      $("#attendanceBody tr").removeClass("excellent-anim");
+  });
+   
+    // ---- 1. SEARCH BY NAME ----
+  $("#searchInput").on("keyup", function () {
+      const value = $(this).val().toLowerCase();
+
+      $("#attendanceBody tr").filter(function () {
+          const last = $(this).find("td").eq(0).text().toLowerCase();
+          const first = $(this).find("td").eq(1).text().toLowerCase();
+
+          $(this).toggle(last.includes(value) || first.includes(value));
+      });
+  });
+
+  // ---- 2. SORT BY ABSENCES (ASC) ----
+  $("#sortAbsBtn").on("click", function () {
+
+      const rows = $("#attendanceBody tr").get();
+
+      rows.sort(function (a, b) {
+          const absA = parseInt($(a).find(".abs").text()) || 0;
+          const absB = parseInt($(b).find(".abs").text()) || 0;
+          return absA - absB;
+      });
+
+      $("#attendanceBody").empty().append(rows);
+
+      $("#sortMessage").text("Currently sorted by absences (ascending)");
+  });
+
+  // ---- 3. SORT BY PARTICIPATION (DESC) ----
+  $("#sortParBtn").on("click", function () {
+
+      const rows = $("#attendanceBody tr").get();
+
+      rows.sort(function (a, b) {
+          const parA = parseInt($(a).find(".par").text()) || 0;
+          const parB = parseInt($(b).find(".par").text()) || 0;
+          return parB - parA;
+      });
+
+      $("#attendanceBody").empty().append(rows);
+
+      $("#sortMessage").text("Currently sorted by participation (descending)");
+  });
+
+         // ===== SAVE ORIGINAL ORDER =====
+      let originalOrder = $("#attendanceBody").children().get();
+
+        // ===== RESET SORTING =====
+          $("#resetSortBtn").on("click", function () {
+       // Restore the saved original rows
+        $("#attendanceBody").empty().append(originalOrder);
+   
+         $("#sortMessage").text("Sorting reset — original order restored.");
+});
+
+}); // END OF READY
+
+
  
 // ---------------- SHOW REPORT BUTTON ----------------
 document.getElementById("showReportBtn").addEventListener("click", () => {

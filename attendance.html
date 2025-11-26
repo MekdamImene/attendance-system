@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Attendance</title>
     <link rel="stylesheet" href="css/style.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> 
 
 </head>
 <body>
@@ -16,6 +16,19 @@
     <a href="reports.html">Reports</a>
     <a href="#">Logout</a>
 </nav>
+
+<div class="search-sort-panel">
+    <input type="text" id="searchInput" placeholder="Search by Name..." class="search-box">
+</div>
+
+<div class="sort-buttons">
+    <button id="sortAbsBtn" class="btn">Sort by Absences (ASC)</button>
+    <button id="sortParBtn" class="btn">Sort by Participation (DESC)</button>
+    <button id="resetSortBtn" class="btn">⟳ Reset Sorting</button>
+</div>
+
+<p id="sortMessage" class="sort-message"></p>
+
 <h2>Student Attendance</h2>
 
 <div class="table-container">
@@ -111,8 +124,16 @@
     <p>Present Students: <strong><span id="presentStudents">0</span></strong></p>
     <p>Participating Students: <strong><span id="participatingStudents">0</span></strong></p>
 
-    <canvas id="attendanceChart" ></canvas>
+  <canvas id="attendanceChart" ></canvas>
+
    </div>
+
+   <button id="highlightExcellentBtn" class="btn">Highlight Excellent Students</button>
+   <button id="resetColorsBtn" class="btn">Reset Colors</button>
+
+   <!-- jQuery CDN -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
 <script src="js/attendance.js"></script>
 </body>
 </html>
